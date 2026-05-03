@@ -5,7 +5,7 @@ from app.api.auth import router as auth_router
 from app.core.db import init_db
 import uvicorn
 
-app = FastAPI(title="CodeDoctor AI API", version="1.0.0")
+app = FastAPI(title="CodeDoctor AI API", version="1.0.0", root_path="/_/backend")
 
 @app.on_event("startup")
 async def startup_event():
