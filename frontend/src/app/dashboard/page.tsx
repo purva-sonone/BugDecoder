@@ -295,7 +295,6 @@ export default function Dashboard() {
                 lineNumbersMinChars: 3,
                 smoothScrolling: true,
                 cursorSmoothCaretAnimation: "on",
-                backgroundColor: "#0d0d0f"
               }}
               beforeMount={(monaco) => {
                 monaco.editor.defineTheme('bugdecoder', {
