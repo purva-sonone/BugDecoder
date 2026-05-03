@@ -20,7 +20,7 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "@/lib/api";
 import toast, { Toaster } from "react-hot-toast";
 
 const LANGUAGES = [
@@ -48,12 +48,8 @@ export default function Dashboard() {
 
   // Fetch History
   const fetchHistory = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
     try {
-      const response = await axios.get("http://localhost:8000/api/auth/history", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get("/api/auth/history");
       setHistory(response.data);
     } catch (err) {
       console.error("Failed to fetch history");
@@ -75,13 +71,10 @@ export default function Dashboard() {
     setReport(null);
     
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:8000/api/debug/analyze", {
+      const response = await api.post("/api/debug/analyze", {
         code: code,
         language: language,
         manual_ai: true
-      }, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
       const { execution, ai_report } = response.data;
@@ -120,11 +113,7 @@ export default function Dashboard() {
       const loadingToast = toast.loading("AI is reading your code...");
       
       try {
-        const response = await axios.post("http://localhost:8000/api/debug/ocr", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const response = await api.post("/api/debug/ocr", formData);
 
         if (response.data.code) {
           setCode(response.data.code);

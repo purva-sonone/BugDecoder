@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Bug, ArrowRight, Loader2, Mail, Lock } from "lucide-react";
-import axios from "axios";
+import api from "@/lib/api";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/api/auth/login", {
+      const response = await api.post("/api/auth/login", {
         email,
         password,
       });
