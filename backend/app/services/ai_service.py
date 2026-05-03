@@ -1,0 +1,79 @@
+import google.generativeai as genai
+from app.core.config import settings
+import json
+import PIL.Image
+import io
+
+class AIService:
+    def __init__(self):
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.model = genai.GenerativeModel('gemini-flash-latest')
+
+    async def analyze_code(self, code: str, language: str, error_message: str = None):
+        prompt = f"""
+        You are an expert coding mentor. Analyze the following {language} code.
+        
+        {f"The code failed with the following error: {error_message}" if error_message else "The user wants a logic check and potential improvements."}
+        
+        Code:
+        ```{language}
+        {code}
+        ```
+        
+        Return your response strictly in JSON format with the following keys:
+        - "status": "error" or "optimization"
+        - "line_number": the specific line number where the issue is (integer, or 0 if general)
+        - "explanation": a beginner-friendly explanation of the problem
+        - "suggested_fix": the corrected code snippet for that specific part
+        - "full_code": the entire corrected file
+        - "mentor_tip": a short, encouraging tip related to this specific problem or language
+        """
+        
+        try:
+            response = self.model.generate_content(prompt)
+            # Basic cleaning of markdown JSON if present
+            content = response.text.strip()
+            if content.startswith("```json"):
+                content = content[7:-3].strip()
+            
+            return json.loads(content)
+        except Exception as e:
+            error_str = str(e)
+            explanation = f"Failed to analyze code: {error_str}"
+            
+            if "429" in error_str:
+                explanation = "AI is currently busy (Rate Limit Reached). Please wait about 30-60 seconds and try again."
+            
+            return {
+                "status": "error",
+                "line_number": 0,
+                "explanation": explanation,
+                "suggested_fix": "",
+                "full_code": code
+            }
+
+    async def extract_code_from_image(self, image_bytes: bytes):
+        try:
+            image = PIL.Image.open(io.BytesIO(image_bytes))
+            
+            prompt = """
+            Extract all the programming code from this image. 
+            - Identify the programming language.
+            - Maintain the exact indentation and structure.
+            - Clean up any OCR noise or misread characters.
+            - Return ONLY the raw code, no explanations or markdown blocks.
+            """
+            
+            response = self.model.generate_content([prompt, image])
+            return {
+                "success": True,
+                "code": response.text.strip(),
+                "detected_language": "auto" # We can add more logic to detect language if needed
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to process image: {str(e)}"
+            }
+
+ai_service = AIService()
