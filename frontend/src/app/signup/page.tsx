@@ -33,7 +33,10 @@ export default function SignupPage() {
       toast.success("Account created successfully!");
       router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Registration failed. Try again.");
+      console.error("Signup error:", error);
+      const detail = error.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : (detail?.[0]?.msg || "Registration failed. Try again.");
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

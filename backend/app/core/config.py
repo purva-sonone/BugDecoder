@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "CodeDoctor AI"
+    PROJECT_NAME: str = "Bug Decoder"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
@@ -21,6 +21,6 @@ class Settings(BaseSettings):
     
     # Database
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-    DATABASE_NAME: str = "codedoctor_ai"
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "bug_decoder")
 
 settings = Settings()

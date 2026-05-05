@@ -5,7 +5,7 @@ from app.api.auth import router as auth_router
 from app.core.db import init_db
 import uvicorn
 
-app = FastAPI(title="CodeDoctor AI API", version="1.0.0", root_path="/_/backend")
+app = FastAPI(title="Bug Decoder API", version="1.0.0", root_path="/_/backend")
 
 @app.on_event("startup")
 async def startup_event():
@@ -15,7 +15,7 @@ async def startup_event():
         print("[DB] MongoDB Connected Successfully!")
     except Exception as e:
         print(f"[DB] MongoDB Connection Failed: {str(e)}")
-        print("[HINT] Check if your IP is whitelisted in MongoDB Atlas Network Access.")
+        # Don't raise here so the server can still start and show status
 
 # Configure CORS
 app.add_middleware(
@@ -32,11 +32,23 @@ app.include_router(debug_router, prefix="/api/debug", tags=["Debug"])
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to CodeDoctor AI API", "status": "online"}
+    return {"message": "Welcome to Bug Decoder API", "status": "online"}
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    from app.models.user import User
+    db_status = "Connected"
+    try:
+        # Try a simple query to check DB
+        await User.find_one()
+    except Exception as e:
+        db_status = f"Disconnected: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "environment": "production" if os.getenv("VERCEL") else "development"
+    }
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
