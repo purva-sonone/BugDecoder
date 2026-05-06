@@ -1,18 +1,13 @@
 {
-  "version": 2,
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "backend/main.py"
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routePrefix": "/",
+      "framework": "nextjs"
     },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "frontend/$1"
-    }
-  ],
-  "functions": {
-    "backend/main.py": {
-      "runtime": "vercel-python@0.10.0"
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/api"
     }
   }
 }
