@@ -6,7 +6,7 @@ from app.core.db import init_db
 import uvicorn
 import os
 
-app = FastAPI(title="Bug Decoder API", version="1.0.0")
+app = FastAPI(title="Bug Decoder API", version="1.0.0", root_path="/api")
 
 @app.on_event("startup")
 async def startup_event():
