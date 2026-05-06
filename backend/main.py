@@ -4,8 +4,9 @@ from app.api.debug import router as debug_router
 from app.api.auth import router as auth_router
 from app.core.db import init_db
 import uvicorn
+import os
 
-app = FastAPI(title="Bug Decoder API", version="1.0.0", root_path="/_/backend")
+app = FastAPI(title="Bug Decoder API", version="1.0.0")
 
 @app.on_event("startup")
 async def startup_event():

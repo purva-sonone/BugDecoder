@@ -7,36 +7,34 @@ import io
 class AIService:
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        # Using JSON mode for faster and more reliable parsing
+        self.model = genai.GenerativeModel(
+            'gemini-flash-latest',
+            generation_config={"response_mime_type": "application/json"}
+        )
 
     async def analyze_code(self, code: str, language: str, error_message: str = None):
         prompt = f"""
-        You are an expert coding mentor. Analyze the following {language} code.
-        
-        {f"The code failed with the following error: {error_message}" if error_message else "The user wants a logic check and potential improvements."}
+        You are an expert coding mentor. Analyze this {language} code.
+        {f"Error: {error_message}" if error_message else "Task: Logic check and optimization."}
         
         Code:
-        ```{language}
         {code}
-        ```
         
-        Return your response strictly in JSON format with the following keys:
-        - "status": "error" or "optimization"
-        - "line_number": the specific line number where the issue is (integer, or 0 if general)
-        - "explanation": a beginner-friendly explanation of the problem
-        - "suggested_fix": the corrected code snippet for that specific part
-        - "full_code": the entire corrected file
-        - "mentor_tip": a short, encouraging tip related to this specific problem or language
+        Return JSON:
+        {{
+            "status": "error" | "optimization",
+            "line_number": int,
+            "explanation": "short beginner-friendly string",
+            "suggested_fix": "code snippet",
+            "full_code": "entire fixed file",
+            "mentor_tip": "short tip"
+        }}
         """
         
         try:
             response = self.model.generate_content(prompt)
-            # Basic cleaning of markdown JSON if present
-            content = response.text.strip()
-            if content.startswith("```json"):
-                content = content[7:-3].strip()
-            
-            return json.loads(content)
+            return json.loads(response.text)
         except Exception as e:
             error_str = str(e)
             explanation = f"Failed to analyze code: {error_str}"
