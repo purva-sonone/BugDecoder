@@ -16,7 +16,7 @@ async def startup_event():
         print("[DB] MongoDB Connected Successfully!")
     except Exception as e:
         print(f"[DB] MongoDB Connection Failed: {str(e)}")
-        # Don't raise here so the server can still start and show status
+        raise e  # Fail fast so we can see the real error in logs
 
 # Configure CORS
 app.add_middleware(
