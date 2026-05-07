@@ -1,0 +1,41 @@
+services:
+  # Backend API (Python/FastAPI)
+  - type: web
+    name: bug-decoder-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_NAME
+        value: bug_decoder
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 10080
+      # These should be set in the Render Dashboard for security
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JUDGE0_API_KEY
+        sync: false
+      - key: JUDGE0_API_URL
+        value: https://judge0-ce.p.rapidapi.com
+      - key: MONGODB_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+
+  # Frontend Web App (Next.js)
+  - type: web
+    name: bug-decoder-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        # This will be the URL of the backend service. 
+        # On Render, you can use the internal or external URL.
+        # Since this is a client-side request in Next.js, we need the external URL.
+        # After deploying the backend, update this value in the Render dashboard.
+        value: https://bug-decoder-api.onrender.com
