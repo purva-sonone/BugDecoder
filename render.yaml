@@ -1,6 +1,7 @@
 services:
   # Backend API (Python/FastAPI)
   - type: web
+    plan: free
     name: bug-decoder-api
     env: python
     rootDir: backend
@@ -27,6 +28,7 @@ services:
 
   # Frontend Web App (Next.js)
   - type: web
+    plan: free
     name: bug-decoder-frontend
     env: node
     rootDir: frontend
