@@ -5,7 +5,7 @@ services:
     name: bug-decoder-api
     env: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_NAME
@@ -31,7 +31,7 @@ services:
   # Frontend Web App (Next.js)
   - type: web
     plan: free
-    name: bug-decoder-frontend
+    name: bug-decoder-web
     env: node
     rootDir: frontend
     buildCommand: npm install && npm run build
@@ -43,3 +43,4 @@ services:
         # Since this is a client-side request in Next.js, we need the external URL.
         # After deploying the backend, update this value in the Render dashboard.
         value: https://bug-decoder-api.onrender.com
+
