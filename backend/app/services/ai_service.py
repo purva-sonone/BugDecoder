@@ -9,34 +9,37 @@ class AIService:
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
         # Using JSON mode for faster and more reliable parsing
-        self.model = genai.GenerativeModel(
-            'gemini-1.5-flash',
-            generation_config={"response_mime_type": "application/json"}
-        )
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     async def analyze_code(self, code: str, language: str, error_message: str = None):
         prompt = f"""
-        You are an expert coding mentor. Analyze this {language} code.
+        Analyze this {language} code.
         {f"Error: {error_message}" if error_message else "Task: Logic check and optimization."}
         
         Code:
         {code}
         
-        Return JSON:
-        {{
-            "status": "error" | "optimization",
-            "line_number": int,
-            "explanation": "short beginner-friendly string",
-            "suggested_fix": "code snippet",
-            "full_code": "entire fixed file",
-            "mentor_tip": "short tip"
-        }}
+        Return ONLY a JSON object with these fields:
+        "status": "error" or "optimization",
+        "line_number": integer,
+        "explanation": "short explanation",
+        "suggested_fix": "code snippet",
+        "full_code": "entire fixed file",
+        "mentor_tip": "short tip"
         """
         
         try:
             # Set a 30 second timeout for the AI request
             response = await asyncio.wait_for(self.model.generate_content_async(prompt), timeout=30.0)
-            return json.loads(response.text)
+            
+            # Clean up response text in case it includes markdown code blocks
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.endswith("```"):
+                text = text[:-3]
+            
+            return json.loads(text.strip())
         except asyncio.TimeoutError:
             return {
                 "status": "error",
