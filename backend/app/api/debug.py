@@ -23,18 +23,11 @@ async def analyze_code(request: DebugRequest, user: Optional[User] = Depends(get
         ai_task = ai_service.analyze_code(request.code, request.language)
         
         execution_result, ai_report = await asyncio.gather(execution_task, ai_task)
-    else:
-        # Standard flow: Run Judge0 first to see if there's an error
-        execution_result = await judge0_service.execute_code(request.code, request.language)
-        
-        if "error" in execution_result:
-            ai_report = await ai_service.analyze_code(request.code, request.language)
-        else:
-            has_error = execution_result.get("status_id") and execution_result.get("status_id") >= 6
-            ai_report = None
-            if has_error:
-                error_msg = execution_result.get("compile_output") or execution_result.get("stderr") or execution_result.get("message")
-                ai_report = await ai_service.analyze_code(request.code, request.language, error_msg)
+    # Standard flow: Run both in parallel to avoid blocking
+    execution_task = judge0_service.execute_code(request.code, request.language)
+    ai_task = ai_service.analyze_code(request.code, request.language)
+    
+    execution_result, ai_report = await asyncio.gather(execution_task, ai_task)
 
     # 3. Save to history if user is logged in
     if user:

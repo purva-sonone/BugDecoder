@@ -33,7 +33,7 @@ class AIService:
         """
         
         try:
-            response = self.model.generate_content(prompt)
+            response = await self.model.generate_content_async(prompt)
             return json.loads(response.text)
         except Exception as e:
             error_str = str(e)

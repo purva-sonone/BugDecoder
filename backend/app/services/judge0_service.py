@@ -1,5 +1,4 @@
-import requests
-import time
+import httpx
 from app.core.config import settings
 
 # Mapping our language IDs to Judge0 language IDs
@@ -36,33 +35,28 @@ class Judge0Service:
         }
 
         try:
-            # Create submission
-            response = requests.post(
-                f"{self.api_url}/submissions",
-                json=payload,
-                headers=self.headers,
-                params={"base64_encoded": "false", "wait": "true"}
-            )
-            
-            result = response.json()
-            
-            # Status IDs:
-            # 3: Accepted (No error)
-            # 4: Wrong Answer
-            # 6: Compilation Error
-            # 7-12: Runtime Errors
-            
-            return {
-                "stdout": result.get("stdout"),
-                "stderr": result.get("stderr"),
-                "compile_output": result.get("compile_output"),
-                "message": result.get("message"),
-                "status": result.get("status", {}).get("description"),
-                "status_id": result.get("status", {}).get("id"),
-                "time": result.get("time"),
-                "memory": result.get("memory")
-            }
-            
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # Create submission
+                response = await client.post(
+                    f"{self.api_url}/submissions",
+                    json=payload,
+                    headers=self.headers,
+                    params={"base64_encoded": "false", "wait": "true"}
+                )
+                
+                result = response.json()
+                
+                return {
+                    "stdout": result.get("stdout"),
+                    "stderr": result.get("stderr"),
+                    "compile_output": result.get("compile_output"),
+                    "message": result.get("message"),
+                    "status": result.get("status", {}).get("description"),
+                    "status_id": result.get("status", {}).get("id"),
+                    "time": result.get("time"),
+                    "memory": result.get("memory")
+                }
+                
         except Exception as e:
             return {"error": str(e)}
 
