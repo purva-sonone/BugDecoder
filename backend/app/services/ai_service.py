@@ -8,10 +8,9 @@ import io
 class AIService:
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     async def analyze_code(self, code: str, language: str, error_message: str = None):
-        print(f"[AI] Starting analysis for {language}...")
         prompt = f"""
         Analyze this {language} code.
         {f"Error: {error_message}" if error_message else "Task: Logic check and optimization."}
@@ -31,7 +30,6 @@ class AIService:
         try:
             # Set a 30 second timeout for the AI request
             response = await asyncio.wait_for(self.model.generate_content_async(prompt), timeout=30.0)
-            print("[AI] Analysis completed successfully!")
             
             # Clean up response text in case it includes markdown code blocks
             text = response.text.strip()
