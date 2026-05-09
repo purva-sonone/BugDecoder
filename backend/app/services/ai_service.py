@@ -8,7 +8,10 @@ import io
 class AIService:
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        # Try to find the best available model
+        self.model_name = 'models/gemini-1.5-flash'
+        self.model = genai.GenerativeModel(self.model_name)
+        print(f"[AI] Initialized with {self.model_name}")
 
     async def analyze_code(self, code: str, language: str, error_message: str = None):
         prompt = f"""
