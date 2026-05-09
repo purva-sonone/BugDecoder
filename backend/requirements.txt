@@ -14,4 +14,5 @@ python-multipart
 python-dotenv
 pillow
 python-jose[cryptography]
-passlib[bcrypt]
+passlib==1.7.4
+bcrypt==4.0.1
