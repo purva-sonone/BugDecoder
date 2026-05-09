@@ -88,21 +88,28 @@ class AIService:
 
     async def extract_code_from_image(self, image_bytes: bytes):
         try:
+            # Run the blocking PIL image opening in a thread if needed, 
+            # but for small images io.BytesIO is fine.
             image = PIL.Image.open(io.BytesIO(image_bytes))
             
             prompt = """
-            Extract all the programming code from this image. 
-            - Identify the programming language.
+            Extract all the programming code or terminal output from this image. 
+            - Identify the programming language if possible.
             - Maintain the exact indentation and structure.
             - Clean up any OCR noise or misread characters.
-            - Return ONLY the raw code, no explanations or markdown blocks.
+            - Return ONLY the raw code or text, no explanations or markdown blocks.
             """
             
-            response = self.model.generate_content([prompt, image])
+            # Use async version with timeout
+            response = await asyncio.wait_for(
+                self.model.generate_content_async([prompt, image]),
+                timeout=30.0
+            )
+            
             return {
                 "success": True,
                 "code": response.text.strip(),
-                "detected_language": "auto" # We can add more logic to detect language if needed
+                "detected_language": "auto"
             }
         except Exception as e:
             return {
