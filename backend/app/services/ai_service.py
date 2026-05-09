@@ -6,30 +6,33 @@ import PIL.Image
 import io
 
 class AIService:
+    _model_cache = None
+    _model_name_cache = None
+
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        # Discover and log available models to find the correct name
-        try:
-            print("[AI] Listing available models...")
-            models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            print(f"[AI] Supported models: {models}")
-            
-            # Prefer 1.5 flash, then 1.5 pro, then any flash, then first available
-            if 'models/gemini-1.5-flash' in models:
-                self.model_name = 'models/gemini-1.5-flash'
-            elif 'models/gemini-1.5-flash-latest' in models:
-                self.model_name = 'models/gemini-1.5-flash-latest'
-            elif any('flash' in m for m in models):
-                self.model_name = [m for m in models if 'flash' in m][0]
-            else:
-                self.model_name = models[0] if models else 'gemini-pro'
+        if not AIService._model_cache:
+            # Discover models only once
+            try:
+                print("[AI] Discovering models...")
+                models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
                 
-            self.model = genai.GenerativeModel(self.model_name)
-            print(f"[AI] Selected model: {self.model_name}")
-        except Exception as e:
-            print(f"[AI] Discovery failed: {e}")
-            self.model_name = 'gemini-1.5-flash' # Final fallback
-            self.model = genai.GenerativeModel(self.model_name)
+                if 'models/gemini-1.5-flash' in models:
+                    AIService._model_name_cache = 'models/gemini-1.5-flash'
+                elif 'models/gemini-1.5-flash-latest' in models:
+                    AIService._model_name_cache = 'models/gemini-1.5-flash-latest'
+                else:
+                    AIService._model_name_cache = models[0] if models else 'gemini-1.5-flash'
+                
+                AIService._model_cache = genai.GenerativeModel(AIService._model_name_cache)
+                print(f"[AI] Model cached: {AIService._model_name_cache}")
+            except Exception as e:
+                print(f"[AI] Discovery failed, using fallback: {e}")
+                AIService._model_name_cache = 'gemini-1.5-flash'
+                AIService._model_cache = genai.GenerativeModel(AIService._model_name_cache)
+        
+        self.model = AIService._model_cache
+        self.model_name = AIService._model_name_cache
 
     async def analyze_code(self, code: str, language: str, error_message: str = None):
         prompt = f"""
