@@ -104,6 +104,14 @@ export default function Dashboard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleApplyFix = () => {
+    if (report && report.full_code) {
+      setCode(report.full_code);
+      toast.success("Fix applied to editor!");
+      setReport(null); // Optional: close the report panel after applying
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -382,13 +390,20 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="p-6 border-t border-white/5">
+                <div className="p-6 border-t border-white/5 space-y-3">
+                  <button 
+                    onClick={handleApplyFix}
+                    className="w-full bg-purple-600 hover:bg-purple-500 text-white py-4 rounded-xl text-lg font-black flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-purple-900/20"
+                  >
+                    <Check size={22} />
+                    Apply Fix to Editor
+                  </button>
                   <button 
                     onClick={handleCopy}
-                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
                   >
                     <Copy size={16} />
-                    Copy Complete Fixed Code
+                    Copy Complete Code
                   </button>
                 </div>
               </motion.div>
