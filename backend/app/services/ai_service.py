@@ -9,7 +9,7 @@ class AIService:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         # Using JSON mode for faster and more reliable parsing
         self.model = genai.GenerativeModel(
-            'gemini-flash-latest',
+            'gemini-1.5-flash',
             generation_config={"response_mime_type": "application/json"}
         )
 
