@@ -1,6 +1,7 @@
 import google.generativeai as genai
 from app.core.config import settings
 import json
+import asyncio
 import PIL.Image
 import io
 
@@ -33,8 +34,17 @@ class AIService:
         """
         
         try:
-            response = await self.model.generate_content_async(prompt)
+            # Set a 30 second timeout for the AI request
+            response = await asyncio.wait_for(self.model.generate_content_async(prompt), timeout=30.0)
             return json.loads(response.text)
+        except asyncio.TimeoutError:
+            return {
+                "status": "error",
+                "line_number": 0,
+                "explanation": "AI analysis timed out. Please try again in a few moments.",
+                "suggested_fix": "",
+                "full_code": code
+            }
         except Exception as e:
             error_str = str(e)
             explanation = f"Failed to analyze code: {error_str}"
