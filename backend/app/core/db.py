@@ -1,11 +1,11 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 from beanie import init_beanie
 from app.core.config import settings
 from app.models.user import User, ScanHistory
 
 async def init_db():
     try:
-        client = AsyncIOMotorClient(
+        client = AsyncMongoClient(
             settings.MONGODB_URL,
             tlsAllowInvalidCertificates=True
         )
